@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="cubes/cubes.vcxproj" Id="67023dc0-76c5-4b8e-88a4-73f6829a3250" />
+</Solution>
