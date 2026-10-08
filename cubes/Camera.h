@@ -5,7 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 const float YAW = -90.0f;
-const float PITCH = 20.0f;
+const float PITCH = -35.0f;
 const float DISTANCE = 5.0f;
 const float ORB_SENSITIVITY = 0.3f;
 const float PAN_SENSITIVITY = 0.01;
