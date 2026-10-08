@@ -106,7 +106,7 @@ int main() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		editor.Draw();
+		editor.Draw(scene, cubeMesh);
 		
 		renderer.Render(scene, camera, frameBufferWidth, frameBufferHeight);
 		ImGui::Render();
