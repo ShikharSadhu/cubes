@@ -9,6 +9,11 @@
 #include "Mesh.h"
 #include "Renderer.h"
 
+#include "imgui/imgui.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_opengl3.h"
+#include "Editor.h"
+
 #include <glm/glm.hpp>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -49,8 +54,21 @@ int main() {
 		return -1;
 	}
 
+	//set up Dear ImGui
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+
+	ImGuiIO& io = ImGui::GetIO();
+	(void)io;
+
+	ImGui::StyleColorsDark();
+
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init();
+
 	Shader ourShader("3.3.shader.vs", "3.3.shader.fs");
 	Renderer renderer(ourShader);
+	Editor editor;
 
 	float vertices[] = {
 		//coords				//colors
@@ -84,13 +102,23 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		processInput(window);
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		editor.Draw();
 		
 		renderer.Render(scene, camera, frameBufferWidth, frameBufferHeight);
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 	glfwTerminate();
 	return 0;
 }
