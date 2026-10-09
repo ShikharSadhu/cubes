@@ -161,6 +161,7 @@
   <ItemGroup>
     <Text Include="3.3.shader.fs" />
     <Text Include="3.3.shader.vs" />
+    <Text Include="outline.fs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />

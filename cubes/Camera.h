@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 
 const float YAW = -90.0f;
 const float PITCH = -35.0f;
@@ -33,7 +34,7 @@ public:
     {
     }
 
-    glm::mat4 GetViewMatrix()
+    glm::mat4 GetViewMatrix() const
     {
         glm::vec3 position = GetPosition();
 
@@ -73,7 +74,47 @@ public:
             Distance = 100.f;
     }
 
-private:
+    void ScreenPointToRay(float mouseX, float mouseY, float screenWidth, float screenHeight, glm::vec3& rayOrigin, glm::vec3& rayDirection) const
+    {
+        if (screenWidth <= 0.0f || screenHeight <= 0.0f)
+            return;
+
+        //first converting screen coords to NDC
+        float x = (2.0f * mouseX) / screenWidth - 1.0f;
+        float y = 1.0f - (2.0f * mouseY) / screenHeight;
+
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), screenWidth / screenHeight, 0.1f, 100.0f);
+        glm::mat4 view = GetViewMatrix();
+        
+        glm::vec4 rayNear(x, y, -1.0f, 1.0f);   //for a point on the near clipping plane
+        glm::vec4 rayFar(x, y, 1.0f, 1.0f);     //for a point on the far clipping plane
+
+        glm::mat4 inverseViewProjection = glm::inverse(projection * view);
+        rayNear = inverseViewProjection * rayNear;
+        rayFar = inverseViewProjection * rayFar;
+
+        rayNear /= rayNear.w;
+        rayFar /= rayFar.w;
+        rayOrigin = glm::vec3(rayNear);
+        rayDirection = glm::normalize(glm::vec3(rayFar - rayNear));
+
+    }
+
+    void SetTarget(const glm::vec3& target) {
+        glm::vec3 currentPosition = GetPosition();
+        Target = target;
+
+        //note that the camera stays in the same world space position upon recalculating orbit parameters
+        glm::vec3 direction = glm::normalize(Target - currentPosition);
+        Yaw = glm::degrees(glm::atan(direction.z, direction.x));
+        Pitch = glm::degrees(glm::asin(direction.y));
+
+        Distance = glm::length(Target - currentPosition);
+    }
+
+    glm::vec3 GetTarget() const {
+        return Target;
+    }
 
     glm::vec3 GetPosition() const
     {

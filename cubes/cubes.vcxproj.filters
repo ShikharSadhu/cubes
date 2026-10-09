@@ -59,6 +59,9 @@
     <Text Include="3.3.shader.vs">
       <Filter>Source Files</Filter>
     </Text>
+    <Text Include="outline.fs">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">

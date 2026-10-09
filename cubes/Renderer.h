@@ -5,8 +5,9 @@
 
 class Renderer {
 public:
-	Renderer(Shader& shader);
-	void Render(Scene& scene, Camera& camera, int frameBufferWidth, int frameBufferHeight);
+	Renderer(Shader& shader, Shader& outlineShader);
+	void Render(Scene& scene, Camera& camera, int selectedEntity, int frameBufferWidth, int frameBufferHeight);
 private:
 	Shader& shader;
+	Shader& outlineShader;
 };

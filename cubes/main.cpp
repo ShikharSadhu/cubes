@@ -17,15 +17,16 @@
 #include <glm/glm.hpp>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 Camera camera(glm::vec3(0.0f, 0.0f, 0.0f), 5.0f);
 Scene scene;
+Editor editor;
 
 int frameBufferWidth = 800;
 int frameBufferHeight = 600;
+bool escapeWasPressed = false;
 
 
 int main() {
@@ -34,6 +35,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_STENCIL_BITS, 8);
 
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Cubes", NULL, NULL);
 	if (window == NULL) {
@@ -67,8 +69,9 @@ int main() {
 	ImGui_ImplOpenGL3_Init();
 
 	Shader ourShader("3.3.shader.vs", "3.3.shader.fs");
-	Renderer renderer(ourShader);
-	Editor editor;
+	Shader outlineShader("3.3.shader.vs", "outline.fs");
+	
+	Renderer renderer(ourShader, outlineShader);
 
 	float vertices[] = {
 		//coords				//colors
@@ -95,20 +98,42 @@ int main() {
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
+	glEnable(GL_STENCIL_TEST);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	//render loop
 	while (!glfwWindowShouldClose(window)) {
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		processInput(window);
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		editor.Draw(scene, cubeMesh);
+
+		bool escapeIsPressed = glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS;
+
+		if (escapeIsPressed && !escapeWasPressed) {
+			if (editor.IsTransforming()) {
+				editor.CancelTransform(scene, camera);
+			}
+			else {
+				glfwSetWindowShouldClose(window, true);
+			}
+		}
+
+		escapeWasPressed = escapeIsPressed;
+
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::GetIO().WantCaptureMouse) {
+			ImVec2 mousePosition = ImGui::GetMousePos();
+			editor.PickEntity(scene, camera, mousePosition.x, mousePosition.y, (float)frameBufferWidth, (float)frameBufferHeight);
+		}
+
+		editor.UpdateTransform(scene, camera);
+
+		editor.Draw(scene, camera, cubeMesh);
 		
-		renderer.Render(scene, camera, frameBufferWidth, frameBufferHeight);
+		renderer.Render(scene, camera, editor.GetSelectedEntity(), frameBufferWidth, frameBufferHeight);
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		
@@ -128,11 +153,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 
 	frameBufferWidth = width;
 	frameBufferHeight = height;
-}
-
-void processInput(GLFWwindow* window) {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
