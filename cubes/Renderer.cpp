@@ -1,13 +1,18 @@
 #include "Renderer.h"
+#include "Shader.h"
+#include "Camera.h"
+#include <glfw/glfw3.h>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-Renderer::Renderer(Shader& shader, Shader& outlineShader) : shader(shader), outlineShader(outlineShader) {
+Renderer::Renderer(Shader& shader, Shader& outlineShader, Shader& lightShader) : shader(shader), outlineShader(outlineShader), lightShader(lightShader) {
 }
 
 void Renderer::Render(Scene& scene, Camera& camera, int selectedEntity, int frameBufferWidth, int frameBufferHeight) {
+	glm::vec3 lightPos(5.0f, 5.0f, 2.0f);
+	
 	glm::mat4 view = camera.GetViewMatrix();
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)frameBufferWidth / (float)frameBufferHeight, 0.1f, 100.0f);
 
@@ -16,11 +21,31 @@ void Renderer::Render(Scene& scene, Camera& camera, int selectedEntity, int fram
 	int viewLoc = glGetUniformLocation(shader.ID, "view");
 	int projLoc = glGetUniformLocation(shader.ID, "projection");
 
+	shader.setVec3("light.position", lightPos);
+	shader.setVec3("viewPos", camera.GetPosition());
+
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 	glStencilMask(0x00);
 	glStencilFunc(GL_ALWAYS, 0, 0xFF);
+
+	// light properties
+	glm::vec3 lightColor;
+	lightColor.x = 2.0f;
+	lightColor.y = 0.7f;
+	lightColor.z = 1.3f;
+	glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f); // decrease the influence
+	glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // low influence
+	shader.setVec3("light.ambient", ambientColor);
+	shader.setVec3("light.diffuse", diffuseColor);
+	shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+	// material properties
+	shader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+	shader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+	shader.setVec3("material.specular", 0.5f, 0.5f, 0.5f); // specular lighting doesn't have full effect on this object's material
+	shader.setFloat("material.shininess", 32.0f);
 
 	for (Entity& entity : scene.entities) {
 		glm::mat4 model = glm::translate(glm::mat4(1.0f), entity.transform.position);

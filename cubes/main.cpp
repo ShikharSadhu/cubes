@@ -70,31 +70,55 @@ int main() {
 
 	Shader ourShader("3.3.shader.vs", "3.3.shader.fs");
 	Shader outlineShader("3.3.shader.vs", "outline.fs");
+	Shader lightShader("3.3.light_cube.vs", "3.3.light_cube.fs");
 	
-	Renderer renderer(ourShader, outlineShader);
+	Renderer renderer(ourShader, outlineShader, lightShader);
 
 	float vertices[] = {
-		//coords				//colors
-		-0.5f, -0.5f,  0.5f,	1.0f, 0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,	0.0f, 1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,	1.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,	1.0f, 0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,	0.0f, 1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,	1.0f, 1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 	};
 
-	unsigned int indices[] = {
-		0, 1, 2,	2, 3, 0,
-		1, 5, 6,	6, 2, 1,
-		5, 4, 7,	7, 6, 5,
-		4, 0, 3,	3, 7, 4,
-		3, 2, 6,	6, 7, 3,
-		4, 5, 1,	1, 0, 4
-	};
-
-	Mesh cubeMesh(vertices, sizeof(vertices), indices, sizeof(indices));
+	Mesh cubeMesh(vertices, sizeof(vertices));
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);

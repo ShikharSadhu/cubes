@@ -182,6 +182,10 @@
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Shader.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="3.3.light_cube.fs" />
+    <None Include="3.3.light_cube.vs" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
